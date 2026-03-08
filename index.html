@@ -1,0 +1,2479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solace — AI-Powered Emotional Journal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #5B4FCF;
+            --accent: #A78BFA;
+            --highlight: #F9A8D4;
+            --bg: #0F0E17;
+            --card-bg: #1C1B29;
+            --text-primary: #F5F3FF;
+            --text-secondary: #9CA3AF;
+            --success: #34D399;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --light-bg: #FDFCFF;
+            --light-card: #FFFFFF;
+            --light-text: #1A1A2E;
+        }
+
+        body {
+            font-family: "Inter", sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+
+        body.light-mode {
+            --bg: #FDFCFF;
+            --card-bg: #FFFFFF;
+            --text-primary: #1A1A2E;
+            --text-secondary: #6B7280;
+            --card-bg: #F9FAFB;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: "Lora", serif;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(91, 79, 207, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(91, 79, 207, 0.5);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes recording {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+            }
+        }
+
+        /* PAGES */
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* LANDING PAGE */
+        .landing {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, #0F0E17 0%, #1C1B29 100%);
+            padding: 40px 20px;
+        }
+
+        .hero {
+            margin-bottom: 60px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--highlight), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 32px;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(91, 79, 207, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(91, 79, 207, 0.4);
+        }
+
+        .reassurance {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 40px 0;
+            font-size: 0.95rem;
+            flex-wrap: wrap;
+        }
+
+        .reassurance-item {
+            color: var(--text-secondary);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin: 60px 0;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            padding: 32px;
+            border-radius: 16px;
+            border: 1px solid rgba(167, 139, 250, 0.1);
+            transition: all 0.3s ease;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(167, 139, 250, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            color: var(--highlight);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .testimonial {
+            margin-top: 80px;
+            padding: 40px;
+            background: rgba(91, 79, 207, 0.05);
+            border-left: 3px solid var(--accent);
+            border-radius: 8px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            animation: slideIn 1.2s ease-out;
+        }
+
+        .testimonial p {
+            font-style: italic;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .testimonial-author {
+            font-weight: 600;
+            color: var(--highlight);
+        }
+
+        /* ONBOARDING */
+        .onboarding-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0F0E17 0%, #1C1B29 100%);
+            padding: 20px;
+        }
+
+        .onboarding-screen {
+            display: none;
+            width: 100%;
+            max-width: 500px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .onboarding-screen.active {
+            display: block;
+        }
+
+        .onboarding-screen h2 {
+            font-size: 2rem;
+            margin-bottom: 40px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--highlight), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .onboarding-options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .option-card {
+            padding: 20px;
+            background: var(--card-bg);
+            border: 2px solid rgba(167, 139, 250, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .option-card:hover {
+            border-color: var(--accent);
+            background: rgba(167, 139, 250, 0.1);
+            transform: translateX(5px);
+        }
+
+        .option-card.selected {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .mood-slider-container {
+            margin-bottom: 40px;
+        }
+
+        .mood-slider {
+            width: 100%;
+            height: 50px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(to right, #EF4444, #F59E0B, #34D399, #3B82F6, #8B5CF6);
+            border-radius: 25px;
+            outline: none;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .mood-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(91, 79, 207, 0.5);
+            transition: box-shadow 0.3s;
+        }
+
+        .mood-slider::-webkit-slider-thumb:hover {
+            box-shadow: 0 0 30px rgba(91, 79, 207, 0.8);
+        }
+
+        .mood-slider::-moz-range-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 20px rgba(91, 79, 207, 0.5);
+            transition: box-shadow 0.3s;
+        }
+
+        .mood-label {
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin-bottom: 20px;
+            min-height: 30px;
+        }
+
+        .emoji-moods {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+
+        .text-input-container {
+            margin-bottom: 24px;
+        }
+
+        .text-input-container label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .text-input-container input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--card-bg);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .text-input-container input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(167, 139, 250, 0.2);
+        }
+
+        .btn-next {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-next:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(91, 79, 207, 0.3);
+        }
+
+        .btn-next:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* MAIN APP LAYOUT */
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-header {
+            background: var(--card-bg);
+            border-bottom: 1px solid rgba(167, 139, 250, 0.1);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .app-logo {
+            font-family: "Lora", serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--highlight), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 1.3rem;
+            transition: all 0.3s ease;
+            padding: 8px;
+        }
+
+        .icon-btn:hover {
+            color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 80px;
+        }
+
+        /* NAVIGATION */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid rgba(167, 139, 250, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 12px 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            padding: 8px 16px;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .nav-item.active .nav-icon {
+            font-size: 1.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        .nav-icon {
+            font-size: 1.3rem;
+        }
+
+        /* JOURNAL PAGE */
+        .journal-greeting {
+            padding: 32px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(91, 79, 207, 0.05), rgba(167, 139, 250, 0.05));
+            border-bottom: 1px solid rgba(167, 139, 250, 0.1);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .journal-greeting h2 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .journal-content {
+            padding: 20px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .mood-section {
+            margin-bottom: 32px;
+            animation: fadeIn 0.7s ease-out;
+        }
+
+        .mood-section label {
+            display: block;
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .mood-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .mood-btn {
+            flex: 1;
+            min-width: 60px;
+            padding: 16px 12px;
+            background: var(--card-bg);
+            border: 2px solid rgba(167, 139, 250, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .mood-btn span {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .mood-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .mood-btn.selected {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(91, 79, 207, 0.4);
+        }
+
+        .journal-section {
+            margin-bottom: 32px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .journal-section label {
+            display: block;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .journal-textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 16px;
+            background: var(--card-bg);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: "Lora", serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        .journal-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(167, 139, 250, 0.2);
+        }
+
+        .journal-textarea::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-bottom: 40px;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(91, 79, 207, 0.3);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* VOICE INTERACTION */
+        .input-mode-toggle {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 10px 16px;
+            background: rgba(167, 139, 250, 0.1);
+            border: 2px solid rgba(167, 139, 250, 0.2);
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .mode-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .voice-container {
+            display: none;
+            margin-bottom: 32px;
+        }
+
+        .voice-container.active {
+            display: block;
+        }
+
+        .voice-button-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .voice-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .voice-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(91, 79, 207, 0.3);
+        }
+
+        .voice-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .voice-btn.recording {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            animation: recording 1.5s infinite;
+        }
+
+        .voice-btn.playing {
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+        }
+
+        .voice-status {
+            padding: 14px;
+            background: rgba(91, 79, 207, 0.1);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--accent);
+            display: none;
+        }
+
+        .voice-status.active {
+            display: block;
+        }
+
+        .voice-transcript {
+            padding: 16px;
+            background: var(--card-bg);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            min-height: 60px;
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-style: italic;
+            display: none;
+        }
+
+        .voice-transcript.active {
+            display: block;
+        }
+
+        .voice-transcript.interim {
+            opacity: 0.7;
+            color: var(--text-secondary);
+        }
+
+        .voice-waveform {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 4px;
+            height: 40px;
+            margin: 16px 0;
+        }
+
+        .voice-bar {
+            width: 4px;
+            background: linear-gradient(180deg, var(--accent), var(--primary));
+            border-radius: 2px;
+            animation: voice-bar 0.6s ease-in-out infinite;
+        }
+
+        @keyframes voice-bar {
+            0%, 100% {
+                height: 5px;
+            }
+            50% {
+                height: 40px;
+            }
+        }
+
+        .voice-bar:nth-child(1) { animation-delay: 0s; }
+        .voice-bar:nth-child(2) { animation-delay: 0.1s; }
+        .voice-bar:nth-child(3) { animation-delay: 0.2s; }
+        .voice-bar:nth-child(4) { animation-delay: 0.3s; }
+        .voice-bar:nth-child(5) { animation-delay: 0.4s; }
+
+        .voice-info {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        .ai-response-audio {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(167, 139, 250, 0.2);
+        }
+
+        .play-response-btn {
+            padding: 10px 16px;
+            background: rgba(91, 79, 207, 0.2);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .play-response-btn:hover {
+            background: rgba(91, 79, 207, 0.3);
+            transform: translateX(4px);
+        }
+
+        .play-response-btn.playing {
+            background: rgba(91, 79, 207, 0.5);
+        }
+
+        /* AI RESPONSE */
+        .ai-response-container {
+            margin-bottom: 40px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .ai-response {
+            background: rgba(91, 79, 207, 0.1);
+            border-left: 3px solid var(--accent);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .ai-response-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .ai-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
+        }
+
+        .ai-response-title {
+            font-weight: 600;
+            color: var(--accent);
+            font-size: 0.95rem;
+        }
+
+        .ai-response-text {
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .follow-up-prompts {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .follow-up-btn {
+            padding: 12px 16px;
+            background: rgba(167, 139, 250, 0.1);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .follow-up-btn:hover {
+            background: rgba(167, 139, 250, 0.2);
+            transform: translateX(4px);
+        }
+
+        /* HISTORY PAGE */
+        .history-container {
+            padding: 20px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .streak-badge {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 32px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .streak-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--highlight), white);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .streak-text {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 8px;
+        }
+
+        .calendar {
+            margin-bottom: 32px;
+            animation: fadeIn 0.7s ease-out;
+        }
+
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .calendar-day-name {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            background: var(--card-bg);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            border-color: var(--accent);
+        }
+
+        .calendar-day.mood-1 { background: rgba(239, 68, 68, 0.2); }
+        .calendar-day.mood-2 { background: rgba(245, 158, 11, 0.2); }
+        .calendar-day.mood-3 { background: rgba(156, 163, 175, 0.2); }
+        .calendar-day.mood-4 { background: rgba(52, 211, 153, 0.2); }
+        .calendar-day.mood-5 { background: rgba(139, 92, 246, 0.2); }
+
+        .calendar-day-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .calendar-day.mood-1 .calendar-day-indicator { background: #EF4444; }
+        .calendar-day.mood-2 .calendar-day-indicator { background: #F59E0B; }
+        .calendar-day.mood-3 .calendar-day-indicator { background: #9CA3AF; }
+        .calendar-day.mood-4 .calendar-day-indicator { background: #34D399; }
+        .calendar-day.mood-5 .calendar-day-indicator { background: #8B5CF6; }
+
+        .entry-detail {
+            background: var(--card-bg);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 16px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .entry-date {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .entry-content {
+            color: var(--text-primary);
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        /* MOOD TRACKING PAGE */
+        .mood-tracking-container {
+            padding: 20px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 32px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .insight-card {
+            background: rgba(91, 79, 207, 0.1);
+            border-left: 3px solid var(--accent);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            animation: fadeIn 0.7s ease-out;
+        }
+
+        .insight-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--accent);
+        }
+
+        .insight-text {
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .pro-blur {
+            filter: blur(5px);
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .unlock-banner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--primary);
+            padding: 20px 40px;
+            border-radius: 8px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        /* SETTINGS PAGE */
+        .settings-container {
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .settings-section {
+            background: var(--card-bg);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .settings-section h3 {
+            margin-bottom: 16px;
+            color: var(--accent);
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(167, 139, 250, 0.1);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .toggle {
+            width: 50px;
+            height: 28px;
+            background: rgba(167, 139, 250, 0.3);
+            border-radius: 14px;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.3s ease;
+            border: none;
+        }
+
+        .toggle.active {
+            background: var(--primary);
+        }
+
+        .toggle-circle {
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s ease;
+        }
+
+        .toggle.active .toggle-circle {
+            left: 24px;
+        }
+
+        .text-input-setting {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(167, 139, 250, 0.05);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        /* PAYWALL MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px 24px;
+            max-width: 500px;
+            width: 90%;
+            animation: slideIn 0.4s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            float: right;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 32px;
+            clear: both;
+        }
+
+        .modal-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+        }
+
+        .modal-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .feature-list {
+            margin-bottom: 32px;
+        }
+
+        .feature-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            align-items: flex-start;
+        }
+
+        .feature-checkmark {
+            color: var(--success);
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .feature-item-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .pricing-section {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .price-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .price-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--highlight);
+            margin: 8px 0;
+        }
+
+        .trial-text {
+            font-size: 0.85rem;
+            color: var(--success);
+            margin-bottom: 24px;
+        }
+
+        .btn-upgrade {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-upgrade:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(91, 79, 207, 0.3);
+        }
+
+        .btn-later {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-later:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* CRISIS ALERT */
+        .crisis-alert {
+            background: rgba(239, 68, 68, 0.15);
+            border: 2px solid var(--danger);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .crisis-title {
+            color: var(--danger);
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .crisis-resources {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 12px;
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .mood-buttons {
+                gap: 8px;
+            }
+
+            .mood-btn {
+                min-width: 50px;
+                padding: 12px 8px;
+                font-size: 1.2rem;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- LANDING PAGE -->
+    <div id="landing-page" class="page active">
+        <div class="landing">
+            <div class="hero">
+                <h1>You Deserve to Be Heard Every Day</h1>
+                <p>Write how you feel. Solace listens, responds with care, and helps you understand your emotional patterns — privately, beautifully, every day.</p>
+                <button class="cta-button" onclick="startJourney()">Start Your Free Journal →</button>
+            </div>
+
+            <div class="reassurance">
+                <div class="reassurance-item">🎯 100% Private</div>
+                <div class="reassurance-item">⏱ Judgment-Free</div>
+                <div class="reassurance-item">👻 Feels Like Magic</div>
+            </div>
+
+            <div class="features">
+                <div class="feature-card">
+                    <h3>Daily Check-In</h3>
+                    <p>A few words a day is all it takes. Solace does the rest.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Mood Tracking</h3>
+                    <p>See your emotional patterns over days and weeks, beautifully visualized.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>AI That Cares</h3>
+                    <p>Thoughtful, warm responses tailored to exactly what you wrote today.</p>
+                </div>
+            </div>
+
+            <div class="testimonial">
+                <p>"I didn't realize how much I needed this until I tried it. It's the first thing I open every morning."</p>
+                <div class="testimonial-author">— Maya T., Teacher</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ONBOARDING -->
+    <div id="onboarding-page" class="page">
+        <div class="onboarding-container">
+            <div class="onboarding-screen active" id="onboarding-1">
+                <h2>What brings you to Solace today?</h2>
+                <div class="onboarding-options">
+                    <div class="option-card" onclick="selectOnboarding(1, 'I\'ve been feeling overwhelmed')">I've been feeling overwhelmed</div>
+                    <div class="option-card" onclick="selectOnboarding(1, 'I want to understand my emotions better')">I want to understand my emotions better</div>
+                    <div class="option-card" onclick="selectOnboarding(1, 'I\'ve been stressed and need an outlet')">I've been stressed and need an outlet</div>
+                    <div class="option-card" onclick="selectOnboarding(1, 'I want to build a daily mindfulness habit')">I want to build a daily mindfulness habit</div>
+                </div>
+                <button class="btn-next" onclick="nextOnboarding()" id="btn-onboarding-1" disabled>Continue</button>
+            </div>
+
+            <div class="onboarding-screen" id="onboarding-2">
+                <h2>How are you feeling right now?</h2>
+                <div class="mood-slider-container">
+                    <div class="emoji-moods">
+                        <span>😞</span>
+                        <span>😕</span>
+                        <span>😐</span>
+                        <span>🙂</span>
+                        <span>😄</span>
+                    </div>
+                    <input type="range" min="1" max="5" value="3" class="mood-slider" id="onboarding-mood" oninput="updateMoodLabel()">
+                    <div class="mood-label" id="mood-label-text">Doing okay</div>
+                </div>
+                <button class="btn-next" onclick="nextOnboarding()">Continue</button>
+            </div>
+
+            <div class="onboarding-screen" id="onboarding-3">
+                <h2>What's your name?</h2>
+                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 24px;">So Solace can greet you personally</p>
+                <div class="text-input-container">
+                    <input type="text" id="onboarding-name" placeholder="Your first name..." oninput="updateOnboardingBtn()">
+                </div>
+                <button class="btn-next" onclick="completeOnboarding()" id="btn-onboarding-3" disabled>Enter My Solace →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app-page" class="page">
+        <div class="app-container">
+            <div class="app-header">
+                <div class="app-logo">✨ Solace</div>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+                    <button class="icon-btn" onclick="navigateTo('settings')" title="Settings">⚙️</button>
+                </div>
+            </div>
+
+            <div class="app-content">
+                <!-- JOURNAL PAGE -->
+                <div id="journal-page" class="page-section active">
+                    <div class="journal-greeting">
+                        <h2 id="greeting-text">Good morning! How are you feeling today?</h2>
+                    </div>
+
+                    <div class="journal-content">
+                        <div class="mood-section">
+                            <label>Today's Mood</label>
+                            <div class="mood-buttons">
+                                <button class="mood-btn" onclick="selectMood(1)" data-mood="1">
+                                    <span>😞</span>
+                                    <span>Very Low</span>
+                                </button>
+                                <button class="mood-btn" onclick="selectMood(2)" data-mood="2">
+                                    <span>😕</span>
+                                    <span>Low</span>
+                                </button>
+                                <button class="mood-btn" onclick="selectMood(3)" data-mood="3">
+                                    <span>😐</span>
+                                    <span>Neutral</span>
+                                </button>
+                                <button class="mood-btn" onclick="selectMood(4)" data-mood="4">
+                                    <span>🙂</span>
+                                    <span>Good</span>
+                                </button>
+                                <button class="mood-btn" onclick="selectMood(5)" data-mood="5">
+                                    <span>😄</span>
+                                    <span>Great</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="input-mode-toggle">
+                            <button class="mode-btn active" onclick="switchInputMode('text')">
+                                ✏️ Type
+                            </button>
+                            <button class="mode-btn" onclick="switchInputMode('voice')" id="voice-mode-btn">
+                                🎤 Voice
+                            </button>
+                        </div>
+
+                        <!-- TEXT MODE -->
+                        <div class="journal-section" id="text-mode">
+                            <label>What's on your mind today?</label>
+                            <textarea class="journal-textarea" id="journal-input" placeholder="What's on your mind today? There's no right or wrong way to write here. Just say what you feel..."></textarea>
+                            <div class="char-count" id="char-count">0 characters</div>
+                        </div>
+
+                        <!-- VOICE MODE -->
+                        <div class="voice-container" id="voice-mode">
+                            <div class="voice-status" id="voice-status"></div>
+                            <div class="voice-waveform" id="voice-waveform" style="display: none;">
+                                <div class="voice-bar"></div>
+                                <div class="voice-bar"></div>
+                                <div class="voice-bar"></div>
+                                <div class="voice-bar"></div>
+                                <div class="voice-bar"></div>
+                            </div>
+                            <div class="voice-button-group">
+                                <button class="voice-btn" onclick="startRecording()" id="record-btn">
+                                    <span>🎤</span> Start Recording
+                                </button>
+                                <button class="voice-btn" onclick="stopRecording()" id="stop-btn" disabled style="display: none;">
+                                    <span>⏹️</span> Stop
+                                </button>
+                            </div>
+                            <div class="voice-transcript interim" id="voice-transcript"></div>
+                            <div class="voice-info" id="voice-info">Tap to record your thoughts. Your voice will be transcribed automatically.</div>
+                        </div>
+
+                        <button class="btn-submit" onclick="submitJournal()" id="btn-submit">Send to Solace ♥</button>
+
+                        <div id="ai-response-section" style="display: none;">
+                            <div class="ai-response-container">
+                                <div class="ai-response">
+                                    <div class="ai-response-header">
+                                        <div class="ai-avatar">✨</div>
+                                        <div class="ai-response-title">Solace's Response</div>
+                                    </div>
+                                    <div class="ai-response-text" id="ai-response-text"></div>
+                                    <div class="ai-response-audio">
+                                        <button class="play-response-btn" onclick="playAIResponse()" id="play-response-btn" style="display: none;">
+                                            <span>🔊</span> Play Response
+                                        </button>
+                                    </div>
+                                    <div class="follow-up-prompts" id="follow-up-prompts"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HISTORY PAGE -->
+                <div id="history-page" class="page-section" style="display: none;">
+                    <div class="history-container">
+                        <div class="streak-badge">
+                            <div class="streak-number" id="streak-count">0</div>
+                            <div class="streak-text" id="streak-text">Keep going! 🔥</div>
+                        </div>
+
+                        <div class="calendar">
+                            <h3 style="margin-bottom: 20px;">Your Journey</h3>
+                            <div class="calendar-header">
+                                <div class="calendar-day-name">Sun</div>
+                                <div class="calendar-day-name">Mon</div>
+                                <div class="calendar-day-name">Tue</div>
+                                <div class="calendar-day-name">Wed</div>
+                                <div class="calendar-day-name">Thu</div>
+                                <div class="calendar-day-name">Fri</div>
+                                <div class="calendar-day-name">Sat</div>
+                            </div>
+                            <div class="calendar-days" id="calendar-days"></div>
+                        </div>
+
+                        <div id="entry-preview"></div>
+                    </div>
+                </div>
+
+                <!-- MOOD TRACKING PAGE -->
+                <div id="mood-page" class="page-section" style="display: none;">
+                    <div class="mood-tracking-container">
+                        <h3 style="margin: 20px 0 32px 0;">Your Emotional Journey</h3>
+
+                        <div class="chart-container">
+                            <canvas id="mood-chart"></canvas>
+                            <div id="chart-unlock" style="display: none;">
+                                <div class="unlock-banner">
+                                    <p style="margin-bottom: 8px;">📊 Unlock full insights</p>
+                                    <button class="btn-upgrade" onclick="showPaywall()">Upgrade to Pro</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="insight-card" id="insight-card" style="display: none;">
+                            <div class="insight-title" id="insight-title">This Week's Insight</div>
+                            <div class="insight-text" id="insight-text"></div>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number" id="avg-mood">—</div>
+                                <div class="stat-label">Average Mood</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="best-day">—</div>
+                                <div class="stat-label">Best Day</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="total-entries">0</div>
+                                <div class="stat-label">Entries</div>
+                            </div>
+                        </div>
+
+                        <button class="btn-upgrade" onclick="showPaywall()" style="margin-bottom: 40px;">Upgrade to Pro for Full History</button>
+                    </div>
+                </div>
+
+                <!-- SETTINGS PAGE -->
+                <div id="settings-page" class="page-section" style="display: none;">
+                    <div class="settings-container">
+                        <h3 style="margin: 20px 0 20px 0;">Settings</h3>
+
+                        <div class="settings-section">
+                            <h3>Profile</h3>
+                            <div class="setting-item">
+                                <label>Name</label>
+                                <input type="text" class="text-input-setting" id="setting-name" placeholder="Your name">
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3>Preferences</h3>
+                            <div class="setting-item">
+                                <label>Dark Mode</label>
+                                <button class="toggle active" onclick="toggleTheme()" id="theme-toggle">
+                                    <div class="toggle-circle"></div>
+                                </button>
+                            </div>
+                            <div class="setting-item">
+                                <label>Email Notifications</label>
+                                <button class="toggle" onclick="toggleNotifications()" id="notification-toggle">
+                                    <div class="toggle-circle"></div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3>Account</h3>
+                            <button class="btn-later" onclick="showPaywall()">Upgrade to Pro</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NAVIGATION -->
+            <div class="nav-bar">
+                <div class="nav-item active" onclick="navigateTo('journal')">
+                    <div class="nav-icon">📝</div>
+                    <span>Journal</span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('history')">
+                    <div class="nav-icon">📅</div>
+                    <span>History</span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('mood')">
+                    <div class="nav-icon">📊</div>
+                    <span>Mood</span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('settings')">
+                    <div class="nav-icon">⚙️</div>
+                    <span>Settings</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAYWALL MODAL -->
+    <div id="paywall-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closePaywall()">✕</button>
+
+            <div class="modal-header">
+                <h2>Unlock the Full Solace Experience</h2>
+                <p>Understand yourself more deeply, every single week.</p>
+            </div>
+
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-checkmark">✓</div>
+                    <div class="feature-item-text">Unlimited journal history</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-checkmark">✓</div>
+                    <div class="feature-item-text">30-day mood chart & pattern analysis</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-checkmark">✓</div>
+                    <div class="feature-item-text">Weekly AI insight report</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-checkmark">✓</div>
+                    <div class="feature-item-text">Unlimited AI follow-up conversations</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-checkmark">✓</div>
+                    <div class="feature-item-text">Journal export as PDF</div>
+                </div>
+            </div>
+
+            <div class="pricing-section">
+                <div class="price-text">Solace Pro</div>
+                <div class="price-amount">$9.99<span style="font-size: 1.2rem;">/mo</span></div>
+                <div class="trial-text">7-day free trial • Cancel anytime</div>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 24px;">No credit card needed to start</p>
+            </div>
+
+            <button class="btn-upgrade" onclick="processPayment()">Start 7-Day Free Trial →</button>
+            <button class="btn-later" onclick="closePaywall()">Maybe Later</button>
+        </div>
+    </div>
+
+    <script>
+        // STATE MANAGEMENT
+        const app = {
+            user: {
+                name: '',
+                currentMood: 3,
+                notifications: false,
+                theme: 'dark'
+            },
+            entries: [],
+            isPro: false,
+            proTrialUsed: false,
+
+            init() {
+                this.loadFromStorage();
+                this.updateGreeting();
+                document.getElementById('setting-name').value = this.user.name;
+                
+                if (this.user.theme === 'light') {
+                    document.body.classList.add('light-mode');
+                    document.getElementById('theme-toggle').classList.add('active');
+                }
+            },
+
+            loadFromStorage() {
+                const saved = localStorage.getItem('solace-app');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    this.user = { ...this.user, ...data.user };
+                    this.entries = data.entries || [];
+                    this.isPro = data.isPro || false;
+                    this.proTrialUsed = data.proTrialUsed || false;
+                }
+            },
+
+            saveToStorage() {
+                localStorage.setItem('solace-app', JSON.stringify({
+                    user: this.user,
+                    entries: this.entries,
+                    isPro: this.isPro,
+                    proTrialUsed: this.proTrialUsed
+                }));
+            },
+
+            updateGreeting() {
+                const hour = new Date().getHours();
+                let greeting = "Good morning";
+                if (hour >= 12 && hour < 18) greeting = "Hey";
+                if (hour >= 18) greeting = "Evening";
+
+                const name = this.user.name ? `, ${this.user.name}` : '';
+                const questions = [
+                    `${greeting}${name}. How are you feeling today?`,
+                    `${greeting}${name}. What's on your mind?`,
+                    `${greeting}${name}. How's your day going?`
+                ];
+                document.getElementById('greeting-text').textContent = questions[Math.floor(Math.random() * questions.length)];
+            }
+        };
+
+        // PAGE NAVIGATION
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function navigateTo(section) {
+            const sections = {
+                'journal': 'journal-page',
+                'history': 'history-page',
+                'mood': 'mood-page',
+                'settings': 'settings-page'
+            };
+
+            document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
+            document.getElementById(sections[section]).style.display = 'block';
+
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event.target.closest('.nav-item')?.classList.add('active');
+
+            if (section === 'history') {
+                renderCalendar();
+                updateStreak();
+            }
+            if (section === 'mood') {
+                setTimeout(() => {
+                    renderMoodChart();
+                    updateMoodStats();
+                }, 100);
+            }
+        }
+
+        // LANDING PAGE
+        function startJourney() {
+            showPage('onboarding-page');
+        }
+
+        // ONBOARDING
+        function selectOnboarding(screen, value) {
+            document.querySelectorAll(`#onboarding-${screen} .option-card`).forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            document.getElementById(`btn-onboarding-${screen}`).disabled = false;
+        }
+
+        function updateMoodLabel() {
+            const value = document.getElementById('onboarding-mood').value;
+            const labels = ['', 'Feeling very low', 'Feeling low', 'Doing okay', 'Feeling good', 'Feeling great'];
+            document.getElementById('mood-label-text').textContent = labels[value];
+        }
+
+        function updateOnboardingBtn() {
+            const name = document.getElementById('onboarding-name').value.trim();
+            document.getElementById('btn-onboarding-3').disabled = !name;
+        }
+
+        function nextOnboarding() {
+            const current = document.querySelector('.onboarding-screen.active');
+            const next = current.nextElementSibling;
+            if (next?.classList.contains('onboarding-screen')) {
+                current.classList.remove('active');
+                next.classList.add('active');
+            }
+        }
+
+        function completeOnboarding() {
+            const name = document.getElementById('onboarding-name').value.trim();
+            const initialMood = parseInt(document.getElementById('onboarding-mood').value);
+            
+            app.user.name = name;
+            app.user.currentMood = initialMood;
+            localStorage.setItem('solace-onboarded', 'true');
+            app.saveToStorage();
+            app.init();
+
+            showPage('app-page');
+            navigateTo('journal');
+        }
+
+        // VOICE RECOGNITION & SYNTHESIS
+        const voiceState = {
+            recognition: null,
+            synth: null,
+            isListening: false,
+            transcript: '',
+            interimTranscript: '',
+            isSpeaking: false,
+            currentMode: 'text'
+        };
+
+        function initializeVoice() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                voiceState.recognition = new SpeechRecognition();
+                voiceState.recognition.continuous = true;
+                voiceState.recognition.interimResults = true;
+                voiceState.recognition.lang = 'en-US';
+
+                voiceState.recognition.onstart = () => {
+                    voiceState.isListening = true;
+                    document.getElementById('record-btn').style.display = 'none';
+                    document.getElementById('stop-btn').style.display = 'flex';
+                    document.getElementById('record-btn').classList.add('recording');
+                    document.getElementById('voice-status').textContent = '🎤 Listening...';
+                    document.getElementById('voice-status').classList.add('active');
+                    document.getElementById('voice-waveform').style.display = 'flex';
+                };
+
+                voiceState.recognition.onresult = (event) => {
+                    voiceState.interimTranscript = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            voiceState.transcript += transcript + ' ';
+                        } else {
+                            voiceState.interimTranscript += transcript;
+                        }
+                    }
+                    updateVoiceDisplay();
+                };
+
+                voiceState.recognition.onerror = (event) => {
+                    console.error('Speech recognition error', event.error);
+                    document.getElementById('voice-status').textContent = '❌ Error: ' + event.error;
+                };
+
+                voiceState.recognition.onend = () => {
+                    voiceState.isListening = false;
+                    document.getElementById('record-btn').style.display = 'flex';
+                    document.getElementById('stop-btn').style.display = 'none';
+                    document.getElementById('record-btn').classList.remove('recording');
+                    document.getElementById('voice-waveform').style.display = 'none';
+                    if (voiceState.transcript.trim()) {
+                        document.getElementById('voice-status').textContent = '✓ Transcription complete';
+                    }
+                };
+            } else {
+                console.log('Speech Recognition not supported');
+                document.getElementById('voice-mode-btn').disabled = true;
+            }
+
+            voiceState.synth = window.speechSynthesis;
+        }
+
+        function switchInputMode(mode) {
+            voiceState.currentMode = mode;
+            const textMode = document.getElementById('text-mode');
+            const voiceMode = document.getElementById('voice-mode');
+            const textBtn = document.querySelector('[onclick="switchInputMode(\'text\')"]');
+            const voiceBtn = document.querySelector('[onclick="switchInputMode(\'voice\')"]');
+
+            if (mode === 'text') {
+                textMode.style.display = 'block';
+                voiceMode.classList.remove('active');
+                textBtn.classList.add('active');
+                voiceBtn.classList.remove('active');
+            } else {
+                textMode.style.display = 'none';
+                voiceMode.classList.add('active');
+                textBtn.classList.remove('active');
+                voiceBtn.classList.add('active');
+                initializeVoice();
+            }
+        }
+
+        function startRecording() {
+            if (voiceState.recognition && !voiceState.isListening) {
+                voiceState.transcript = '';
+                voiceState.interimTranscript = '';
+                document.getElementById('voice-transcript').textContent = '';
+                document.getElementById('voice-status').textContent = '';
+                voiceState.recognition.start();
+            }
+        }
+
+        function stopRecording() {
+            if (voiceState.recognition && voiceState.isListening) {
+                voiceState.recognition.stop();
+            }
+        }
+
+        function updateVoiceDisplay() {
+            const fullTranscript = voiceState.transcript + voiceState.interimTranscript;
+            const transcriptEl = document.getElementById('voice-transcript');
+            
+            if (fullTranscript.trim()) {
+                transcriptEl.textContent = fullTranscript;
+                transcriptEl.classList.add('active');
+                if (voiceState.interimTranscript) {
+                    transcriptEl.classList.add('interim');
+                } else {
+                    transcriptEl.classList.remove('interim');
+                }
+            }
+        }
+
+        function playAIResponse() {
+            const responseText = document.getElementById('ai-response-text').textContent;
+            const playBtn = document.getElementById('play-response-btn');
+
+            if (voiceState.isSpeaking) {
+                voiceState.synth.cancel();
+                voiceState.isSpeaking = false;
+                playBtn.classList.remove('playing');
+                playBtn.innerHTML = '<span>🔊</span> Play Response';
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(responseText);
+            utterance.rate = 0.95;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+
+            utterance.onstart = () => {
+                voiceState.isSpeaking = true;
+                playBtn.classList.add('playing');
+                playBtn.innerHTML = '<span>⏹️</span> Stop Playing';
+            };
+
+            utterance.onend = () => {
+                voiceState.isSpeaking = false;
+                playBtn.classList.remove('playing');
+                playBtn.innerHTML = '<span>🔊</span> Play Response';
+            };
+
+            utterance.onerror = () => {
+                voiceState.isSpeaking = false;
+                playBtn.classList.remove('playing');
+                playBtn.innerHTML = '<span>🔊</span> Play Response';
+            };
+
+            voiceState.synth.speak(utterance);
+        }
+
+        // JOURNAL
+        function selectMood(mood) {
+            app.user.currentMood = mood;
+            document.querySelectorAll('.mood-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelector(`[data-mood="${mood}"]`).classList.add('selected');
+        }
+
+        document.getElementById('journal-input')?.addEventListener('input', (e) => {
+            const count = e.target.value.length;
+            document.getElementById('char-count').textContent = `${count} characters`;
+        });
+
+        const crisisKeywords = ['want to disappear', 'can\'t go on', 'ending it', 'kill myself', 'hurt myself', 'self-harm', 'suicide', 'overdose'];
+
+        function detectCrisis(text) {
+            const lowerText = text.toLowerCase();
+            return crisisKeywords.some(keyword => lowerText.includes(keyword));
+        }
+
+        async function submitJournal() {
+            let text = '';
+            
+            if (voiceState.currentMode === 'text') {
+                text = document.getElementById('journal-input').value.trim();
+            } else {
+                text = voiceState.transcript.trim();
+            }
+
+            if (!text) {
+                alert('Please write or speak something before submitting.');
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+
+            // Create entry
+            const entry = {
+                date: new Date().toISOString(),
+                mood: app.user.currentMood,
+                text: text,
+                response: '',
+                followUps: [],
+                inputMethod: voiceState.currentMode
+            };
+
+            // Generate AI response
+            const isCrisis = detectCrisis(text);
+            const response = await generateAIResponse(text, app.user.name, isCrisis);
+            entry.response = response.main;
+            entry.followUps = response.followUps;
+
+            app.entries.push(entry);
+            app.saveToStorage();
+
+            // Display response
+            displayAIResponse(entry, isCrisis);
+
+            // Reset form
+            document.getElementById('journal-input').value = '';
+            document.getElementById('char-count').textContent = '0 characters';
+            voiceState.transcript = '';
+            voiceState.interimTranscript = '';
+            document.getElementById('voice-transcript').textContent = '';
+            document.getElementById('voice-status').textContent = '';
+            document.getElementById('voice-status').classList.remove('active');
+            
+            btn.disabled = false;
+            btn.textContent = 'Send to Solace ♥';
+
+            // Show play button for AI response if in voice mode
+            if (voiceState.currentMode === 'voice') {
+                setTimeout(() => {
+                    document.getElementById('play-response-btn').style.display = 'flex';
+                }, 500);
+            }
+        }
+
+        async function generateAIResponse(entryText, userName, isCrisis) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            if (isCrisis) {
+                return {
+                    main: `I hear you, ${userName}. What you're sharing matters deeply, and I'm concerned about what you're experiencing right now. Please reach out to someone who can help — a therapist, counselor, trusted friend, or family member. You don't have to carry this alone. If you're in immediate danger, please contact emergency services or a crisis line. ♥`,
+                    followUps: [
+                        'I need professional help',
+                        'Who can I talk to?'
+                    ]
+                };
+            }
+
+            const emotions = {
+                'overwhelmed': 'feeling overwhelmed',
+                'tired': 'exhausted',
+                'happy': 'joyful',
+                'sad': 'down',
+                'anxious': 'worried',
+                'grateful': 'grateful',
+                'stressed': 'stressed'
+            };
+
+            let detectedEmotion = 'How you\'re feeling';
+            for (const [key, value] of Object.entries(emotions)) {
+                if (entryText.toLowerCase().includes(key)) {
+                    detectedEmotion = value;
+                    break;
+                }
+            }
+
+            const responses = [
+                `It sounds like you've been ${detectedEmotion}, and that makes complete sense given what you've shared. The fact that you're taking time to reflect on this shows real self-awareness. Sometimes just naming what we feel is the first step toward understanding it. Keep going. ♥`,
+                
+                `I'm hearing that you're ${detectedEmotion}, and I want you to know that's valid and understandable. What strikes me is how thoughtfully you're processing this. That kind of emotional intelligence is a strength. Take gentle care of yourself today. ♥`,
+                
+                `There's real honesty in what you've written — I can feel that you're ${detectedEmotion}. That takes courage to express. Remember that feelings aren't permanent; they shift and change. You're doing better than you might think. ♥`,
+                
+                `Being ${detectedEmotion} is part of the human experience, and you're navigating it with such grace. What you've shared here shows wisdom and self-compassion. Trust yourself. You know what you need. ♥`
+            ];
+
+            const followUps = [
+                'Tell me more about that...',
+                'What could help me feel better?',
+                'I want to explore that feeling more',
+                'What went well today?'
+            ];
+
+            return {
+                main: responses[Math.floor(Math.random() * responses.length)],
+                followUps: followUps.slice(0, 2)
+            };
+        }
+
+        function displayAIResponse(entry, isCrisis) {
+            const section = document.getElementById('ai-response-section');
+            const responseText = document.getElementById('ai-response-text');
+            const followUpsContainer = document.getElementById('follow-up-prompts');
+            const playBtn = document.getElementById('play-response-btn');
+
+            responseText.textContent = entry.response;
+            
+            followUpsContainer.innerHTML = entry.followUps.map(prompt => 
+                `<button class="follow-up-btn" onclick="continueConversation('${prompt.replace(/'/g, "\\'")}')">${prompt}</button>`
+            ).join('');
+
+            // Show play button only in voice mode
+            if (voiceState.currentMode === 'voice') {
+                playBtn.style.display = 'flex';
+            } else {
+                playBtn.style.display = 'none';
+            }
+
+            section.style.display = 'block';
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function continueConversation(prompt) {
+            alert(`Continuing conversation: "${prompt}"\n\nThis feature would generate a follow-up response in the full version.`);
+        }
+
+        // HISTORY / CALENDAR
+        function renderCalendar() {
+            const today = new Date();
+            const sevenDaysAgo = new Date(today);
+            sevenDaysAgo.setDate(today.getDate() - 6);
+
+            const moodByDate = {};
+            app.entries.forEach(entry => {
+                const entryDate = new Date(entry.date);
+                const dateKey = entryDate.toDateString();
+                if (!moodByDate[dateKey]) {
+                    moodByDate[dateKey] = entry.mood;
+                }
+            });
+
+            const container = document.getElementById('calendar-days');
+            container.innerHTML = '';
+
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(sevenDaysAgo);
+                date.setDate(sevenDaysAgo.getDate() + i);
+                const dateKey = date.toDateString();
+                const dayNum = date.getDate();
+                const mood = moodByDate[dateKey];
+
+                const dayEl = document.createElement('div');
+                dayEl.className = `calendar-day ${mood ? `mood-${mood}` : ''}`;
+                dayEl.innerHTML = `<span style="font-weight: 600;">${dayNum}</span>${mood ? `<div class="calendar-day-indicator"></div>` : ''}`;
+                dayEl.onclick = () => {
+                    if (mood) {
+                        const entry = app.entries.find(e => new Date(e.date).toDateString() === dateKey);
+                        showEntryPreview(entry, dateKey);
+                    }
+                };
+                container.appendChild(dayEl);
+            }
+        }
+
+        function showEntryPreview(entry, dateKey) {
+            const preview = document.getElementById('entry-preview');
+            preview.innerHTML = `
+                <div class="entry-detail">
+                    <div class="entry-date">${dateKey}</div>
+                    <div class="entry-content"><strong>Your Entry:</strong><br>${entry.text}</div>
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(167, 139, 250, 0.1);">
+                        <div class="ai-response-header">
+                            <div class="ai-avatar">✨</div>
+                            <div class="ai-response-title">Solace's Response</div>
+                        </div>
+                        <div class="ai-response-text">${entry.response}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateStreak() {
+            const today = new Date();
+            let streak = 0;
+            let current = new Date(today);
+
+            while (streak < 365) {
+                const dateKey = current.toDateString();
+                const hasEntry = app.entries.some(e => new Date(e.date).toDateString() === dateKey);
+                
+                if (hasEntry) {
+                    streak++;
+                    current.setDate(current.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+
+            document.getElementById('streak-count').textContent = streak;
+            document.getElementById('streak-text').textContent = streak > 0 ? `Keep going! 🔥` : `Start your streak today!`;
+        }
+
+        // MOOD CHART
+        function renderMoodChart() {
+            const canvas = document.getElementById('mood-chart');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const today = new Date();
+            const sevenDaysAgo = new Date(today);
+            sevenDaysAgo.setDate(today.getDate() - 6);
+
+            const labels = [];
+            const data = [];
+            const moodByDate = {};
+
+            app.entries.forEach(entry => {
+                const entryDate = new Date(entry.date);
+                const dateKey = entryDate.toDateString();
+                if (!moodByDate[dateKey]) {
+                    moodByDate[dateKey] = entry.mood;
+                }
+            });
+
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(sevenDaysAgo);
+                date.setDate(sevenDaysAgo.getDate() + i);
+                const dateKey = date.toDateString();
+                labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                data.push(moodByDate[dateKey] || null);
+            }
+
+            if (window.moodChartInstance) {
+                window.moodChartInstance.destroy();
+            }
+
+            window.moodChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Mood Score',
+                        data: data,
+                        borderColor: '#A78BFA',
+                        backgroundColor: 'rgba(167, 139, 250, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#5B4FCF',
+                        pointBorderColor: '#A78BFA',
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 5,
+                            ticks: {
+                                callback: (value) => {
+                                    const emojis = ['', '😞', '😕', '😐', '🙂', '😄'];
+                                    return emojis[value] || '';
+                                },
+                                color: '#9CA3AF',
+                                font: { size: 14 }
+                            },
+                            grid: {
+                                color: 'rgba(167, 139, 250, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#9CA3AF'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateMoodStats() {
+            const today = new Date();
+            const sevenDaysAgo = new Date(today);
+            sevenDaysAgo.setDate(today.getDate() - 6);
+
+            const weekEntries = app.entries.filter(e => {
+                const eDate = new Date(e.date);
+                return eDate >= sevenDaysAgo && eDate <= today;
+            });
+
+            if (weekEntries.length === 0) {
+                document.getElementById('avg-mood').textContent = '—';
+                document.getElementById('best-day').textContent = '—';
+                document.getElementById('total-entries').textContent = '0';
+                document.getElementById('insight-card').style.display = 'none';
+                return;
+            }
+
+            const avgMood = (weekEntries.reduce((sum, e) => sum + e.mood, 0) / weekEntries.length).toFixed(1);
+            const bestEntry = weekEntries.reduce((best, e) => e.mood > best.mood ? e : best);
+            const bestDate = new Date(bestEntry.date).toLocaleDateString('en-US', { weekday: 'long' });
+
+            document.getElementById('avg-mood').textContent = `${avgMood}/5`;
+            document.getElementById('best-day').textContent = bestDate;
+            document.getElementById('total-entries').textContent = weekEntries.length;
+
+            const insights = [
+                `Your mood has been steadier this week. That consistency shows you're finding balance. Notice what's helping you stay grounded. ♥`,
+                `You seem to feel better on days when you write longer entries. That's a powerful sign that expression helps you process and feel lighter. Keep writing. ♥`,
+                `Your mood tends to improve as the week goes on. You're building momentum. Trust that feeling. ♥`,
+                `You're navigating this week with real resilience. Even on the harder days, you showed up for yourself. That matters. ♥`
+            ];
+
+            document.getElementById('insight-title').textContent = `This Week's Insight, ${app.user.name}`;
+            document.getElementById('insight-text').textContent = insights[Math.floor(Math.random() * insights.length)];
+            document.getElementById('insight-card').style.display = 'block';
+        }
+
+        // SETTINGS
+        document.getElementById('setting-name')?.addEventListener('change', (e) => {
+            app.user.name = e.target.value;
+            app.saveToStorage();
+        });
+
+        function toggleTheme() {
+            app.user.theme = app.user.theme === 'dark' ? 'light' : 'dark';
+            document.body.classList.toggle('light-mode');
+            
+            const toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.classList.toggle('active');
+            }
+            
+            app.saveToStorage();
+        }
+
+        function toggleNotifications() {
+            app.user.notifications = !app.user.notifications;
+            const toggle = document.getElementById('notification-toggle');
+            if (toggle) {
+                toggle.classList.toggle('active');
+            }
+            app.saveToStorage();
+        }
+
+        // PAYWALL
+        function showPaywall() {
+            document.getElementById('paywall-modal').classList.add('active');
+        }
+
+        function closePaywall() {
+            document.getElementById('paywall-modal').classList.remove('active');
+        }
+
+        function processPayment() {
+            if (!app.proTrialUsed) {
+                app.isPro = true;
+                app.proTrialUsed = true;
+                app.saveToStorage();
+                closePaywall();
+                alert('Welcome to Solace Pro! Your 7-day free trial is now active. Enjoy unlimited features! ♥');
+                renderMoodChart();
+                updateMoodStats();
+            } else {
+                alert('In a production app, this would open a Stripe payment modal.');
+            }
+        }
+
+        // INITIALIZE
+        window.addEventListener('load', () => {
+            initializeVoice();
+            const hasOnboarded = localStorage.getItem('solace-onboarded');
+            if (!hasOnboarded) {
+                showPage('landing-page');
+            } else {
+                app.init();
+                showPage('app-page');
+            }
+        });
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (voiceState.synth) {
+                voiceState.synth.cancel();
+            }
+        });
+    </script>
+</body>
+</html>

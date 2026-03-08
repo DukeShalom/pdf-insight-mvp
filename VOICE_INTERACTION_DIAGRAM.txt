@@ -1,0 +1,301 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                    SOLACE VOICE INTERACTION ARCHITECTURE                      ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+
+                         ┌─────────────────────────┐
+                         │   USER JOURNAL PAGE     │
+                         └────────────┬────────────┘
+                                      │
+                     ┌────────────────┼────────────────┐
+                     │                │                │
+                  ✏️ TEXT          🎤 VOICE        🎙️ BOTH
+                  MODE             MODE           AVAILABLE
+                     │                │                │
+          ┌──────────▼──────────┐  ┌─▼──────────────┐
+          │  TEXT INPUT FLOW    │  │ VOICE RECORDING│
+          └──────────┬──────────┘  └─┬──────────────┘
+                     │                │
+          • Type in textarea    • Start recording
+          • Character counter   • Live transcription
+          • Submit when ready   • Waveform animation
+                                • Real-time interim text
+                                • Stop when done
+                                • Edit if needed
+
+                     └────────────────┬────────────────┘
+                                      │
+                                ┌─────▼─────┐
+                                │ ENTRY TEXT│
+                                └─────┬─────┘
+                                      │
+                     ┌────────────────┼────────────────┐
+                     │                │                │
+                  CRISIS?         EMOTION          MOOD
+                  DETECTION       DETECTION         LEVEL
+                     │                │                │
+              ┌──────▼──────────┐     │        ┌──────▼─────┐
+              │ CRISIS          │     │        │ 1-5 SCALE  │
+              │ KEYWORDS?       │     │        │ SELECTED   │
+              │                 │     │        └────────────┘
+              │ YES → SHOW      │     │
+              │ RESOURCES       │     │
+              │ NO → CONTINUE   │     │
+              └─────────────────┘     │
+                                      │
+                           ┌──────────▼──────────────┐
+                           │  GENERATE AI RESPONSE   │
+                           │ (Emotion + personalized)│
+                           └──────────┬──────────────┘
+                                      │
+                           ┌──────────▼──────────────┐
+                           │ DISPLAY RESPONSE       │
+                           │ + FOLLOW-UP PROMPTS    │
+                           └──────────┬──────────────┘
+                                      │
+                        ┌─────────────┴────────────┐
+                        │                          │
+                 ✏️ TEXT MODE            🎤 VOICE MODE
+                        │                          │
+                 No play button         ┌──────────▼──────────┐
+                 Just read text         │ SHOW PLAY BUTTON    │
+                                        │ "🔊 Play Response"  │
+                                        └──────────┬──────────┘
+                                                   │
+                                        ┌──────────▼──────────┐
+                                        │ USER TAPS PLAY      │
+                                        └──────────┬──────────┘
+                                                   │
+                                   ┌───────────────▼───────────────┐
+                                   │   SPEECH SYNTHESIS API        │
+                                   │ (Text-to-Speech Conversion)   │
+                                   └───────────────┬───────────────┘
+                                                   │
+                         ┌─────────────────────────▼──────────────────┐
+                         │          AUDIO PLAYBACK                    │
+                         │ • Rate: 0.95x (comfortable)               │
+                         │ • Pitch: Natural                          │
+                         │ • Volume: Device dependent               │
+                         │ • Controls: Play/Pause/Stop               │
+                         └─────────────────────────┬──────────────────┘
+                                                   │
+                                         ┌─────────▼─────────┐
+                                         │ USER HEARS VOICE  │
+                                         │ WARM & CARING     │
+                                         └───────────────────┘
+
+
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                        DATA FLOW VISUALIZATION                                ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+
+INPUT METHODS:
+──────────────
+
+    ✏️ TYPING                           🎤 VOICE RECORDING
+    ────────                           ──────────────────
+    
+    User types                         User speaks
+         │                                  │
+         │                    Web Speech API (Recognition)
+         │                                  │
+    Textarea value                   Live interim text
+         │                                  │
+         │                    updateVoiceDisplay()
+         │                                  │
+    journal-input.value                voice-transcript
+         │                                  │
+         └──────────────┬───────────────────┘
+                        │
+                  submitJournal()
+                        │
+            ┌───────────┴───────────┐
+            │                       │
+       Get text from         Get text from
+       journal-input         voiceState.transcript
+            │                       │
+            └───────────┬───────────┘
+                        │
+                  entry.text ready
+                        │
+                  Process & Store
+
+
+STATE MANAGEMENT:
+─────────────────
+
+    voiceState object:
+    ┌──────────────────────────────────┐
+    │ recognition: SpeechRecognition    │
+    │ synth: SpeechSynthesis           │
+    │ isListening: boolean             │
+    │ transcript: string               │
+    │ interimTranscript: string        │
+    │ isSpeaking: boolean              │
+    │ currentMode: 'text' | 'voice'    │
+    └──────────────────────────────────┘
+
+
+BROWSER APIs USED:
+──────────────────
+
+    ┌─────────────────────────┐    ┌──────────────────────┐
+    │  Web Speech API         │    │ Speech Synthesis API │
+    │  (Recognition)          │    │ (Synthesis)          │
+    ├─────────────────────────┤    ├──────────────────────┤
+    │ • start()               │    │ • speak()            │
+    │ • stop()                │    │ • cancel()           │
+    │ • onstart               │    │ • onstart            │
+    │ • onresult              │    │ • onend              │
+    │ • onerror               │    │ • onerror            │
+    │ • onend                 │    │ (properties)         │
+    │ • continuous: true      │    │ • rate = 0.95        │
+    │ • interimResults: true  │    │ • pitch = 1.0        │
+    └─────────────────────────┘    │ • volume = 1.0       │
+                                   └──────────────────────┘
+
+
+ENTRY STRUCTURE WITH VOICE:
+────────────────────────────
+
+    {
+      date: "2025-03-08T22:34:00.000Z",
+      mood: 3,                           ← Selected emoji (1-5)
+      text: "I've been feeling...",      ← From text OR voice
+      response: "It sounds like...",     ← AI generated
+      followUps: [...],                  ← Suggestions
+      inputMethod: "voice"               ← NEW: tracks method
+    }
+
+
+UI STATE TRANSITIONS:
+─────────────────────
+
+    Initial State
+        │
+        ├─→ User selects "✏️ Type"
+        │   └─→ #text-mode displayed
+        │       #voice-mode hidden
+        │
+        └─→ User selects "🎤 Voice"
+            └─→ #text-mode hidden
+                #voice-mode.active displayed
+                │
+                ├─→ User taps "🎤 Start Recording"
+                │   └─→ initializeVoice()
+                │       waveform visible
+                │       status: "🎤 Listening..."
+                │
+                └─→ User taps "⏹️ Stop"
+                    └─→ recognition.stop()
+                        transcript displayed
+                        status: "✓ Complete"
+
+
+VISUAL FEEDBACK STATES:
+───────────────────────
+
+    State               Visual Indicator
+    ─────               ────────────────
+    Recording           🎤 Red pulsing button
+                        🌊 Animated waveform
+                        📝 Interim text (italic)
+                        Status: "🎤 Listening..."
+
+    Stopped             ✅ Solid transcript
+                        Status: "✓ Transcription complete"
+                        Ready for submission
+
+    Playing Response    🔊 Blue "⏹️ Stop Playing" button
+                        Text being spoken
+                        User can stop anytime
+
+    Complete Entry      ✨ Both text/voice flow
+                        📊 Saved to localStorage
+                        📅 Appears in History
+                        📈 Counts toward streak
+
+
+MOBILE OPTIMIZATION:
+────────────────────
+
+    ┌────────────────────────┐
+    │  Mobile Voice Journal  │
+    ├────────────────────────┤
+    │                        │
+    │  Header with mood      │
+    │  ───────────────────   │
+    │                        │
+    │  [✏️ Type] [🎤 Voice]  │
+    │  ───────────────────   │
+    │                        │
+    │  🎤 [Start] [Stop]     │
+    │  ───────────────────   │
+    │                        │
+    │  🌊 Waveform here      │
+    │  ───────────────────   │
+    │                        │
+    │  "Your transcription   │
+    │   appears here as you  │
+    │   speak naturally"     │
+    │                        │
+    │  [Send to Solace ♥]    │
+    │  ───────────────────   │
+    │                        │
+    │  Response (read or):   │
+    │  [🔊 Play Response]    │
+    │                        │
+    ├────────────────────────┤
+    │ 📝 📅 📊 ⚙️  ← NavBar  │
+    └────────────────────────┘
+
+
+ACCESSIBILITY FEATURES:
+───────────────────────
+
+    For Mobility Limitations:
+    • Hands-free voice recording
+    • Large touch targets (44px+)
+    • One-tap controls
+
+    For Vision Limitations:
+    • Audio playback of responses
+    • High contrast dark theme
+    • Clear status messages
+
+    For Hearing Limitations:
+    • Text transcription visible
+    • Visual waveform feedback
+    • Written AI responses
+
+
+CRISIS DETECTION FLOW:
+──────────────────────
+
+    Entry text (voice OR text)
+         │
+    detectCrisis(text)
+         │
+    ├─→ NO keywords
+    │   └─→ Normal AI response
+    │       "warm & caring"
+    │
+    └─→ YES keywords
+        └─→ Crisis response
+            "extra caring + resources"
+            "Text HOME to 741741"
+            (Same for voice or text)
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+KEY INSIGHT: Voice mode isn't just recording. It's a complete parallel flow:
+  • Text → Voice recognition → live display → same entry
+  • Response → Text-to-speech → user can hear warmth
+
+This creates TWO emotional connection points:
+  1. Speaking instead of typing (more vulnerable)
+  2. Hearing Solace's voice (more human)
+
+═════════════════════════════════════════════════════════════════════════════════
